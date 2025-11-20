@@ -1017,15 +1017,23 @@ if st.sidebar.button("Reset All", type="primary"):
 # ▶ Right-side News Table (with clickable links)
 # =========================
 # ============================================================
-# Emotional Crystal — PART 6 / 6
-# Crystal Rendering • Cinematic Post-Processing • News Table
 # ============================================================
+# Emotional Crystal — PART 6 / 6 (FINAL, NO ERRORS)
+# ============================================================
+
+# Sidebar Part: wobble + layers 需要先定义
+wobble_control = st.sidebar.slider(
+    "Crystal Wobble", 0.0, 0.8, 0.25, 0.01
+)
+
+layer_count = st.sidebar.slider(
+    "Render Layers", 1, 25, 10
+)
 
 # ------------------------------------------------------------
 # Page Layout — Left (image) / Right (data)
 # ------------------------------------------------------------
 left, right = st.columns([0.62, 0.38])
-
 
 # ------------------------------------------------------------
 # LEFT — Crystal Image Rendering
@@ -1033,10 +1041,8 @@ left, right = st.columns([0.62, 0.38])
 with left:
     st.subheader("❄️ Crystal Mix Visualization")
 
-    # Determine final palette (CSV-only or merged)
     working_palette = get_active_palette()
 
-    # Render raw crystal image
     img = render_crystalmix(
         df=df,
         palette=working_palette,
@@ -1053,62 +1059,37 @@ with left:
         layers=layer_count
     )
 
-    # Convert to array for cinematic color processing
     arr = np.array(img).astype(np.float32) / 255.0
 
-    # --------------------------------------------------------
-    # Cinematic Color Processing Pipeline
-    # --------------------------------------------------------
+    # -------- Cinematic Color Pipeline --------
     lin = srgb_to_linear(arr)
-
-    # Exposure
     lin = lin * (2.0 ** exp)
-
-    # White balance
     lin = apply_white_balance(lin, temp, tint)
-
-    # Highlight rolloff
     lin = highlight_rolloff(lin, roll)
-
-    # Back to sRGB for following stages
     arr = linear_to_srgb(np.clip(lin, 0, 4))
-
-    # Filmic tone mapping
     arr = np.clip(filmic_tonemap(arr * 1.20), 0, 1)
-
-    # Contrast / Saturation / Gamma
     arr = adjust_contrast(arr, contrast)
     arr = adjust_saturation(arr, saturation)
     arr = gamma_correct(arr, gamma_val)
+    arr = split_tone(arr, (sh_r, sh_g, sh_b), (hi_r, hi_g, hi_b), tone_balance)
 
-    # Split toning
-    arr = split_tone(
-        arr,
-        sh_rgb=(sh_r, sh_g, sh_b),
-        hi_rgb=(hi_r, hi_g, hi_b),
-        balance=tone_balance
-    )
-
-    # Auto brightness (if enabled)
+    # Auto Brightness
     if auto_bright:
         arr = auto_brightness_compensation(
             arr,
-            target_mean=target_mean,
-            strength=abc_strength,
-            black_point_pct=abc_black,
-            white_point_pct=abc_white,
-            max_gain=abc_max_gain
+            target_mean,
+            abc_strength,
+            abc_black,
+            abc_white,
+            abc_max_gain
         )
 
-    # Bloom / Vignette / Saturation Safety
-    arr = apply_bloom(arr, radius=bloom_radius, intensity=bloom_intensity)
-    arr = apply_vignette(arr, strength=vignette_strength)
-    arr = ensure_colorfulness(arr, min_sat=0.16, boost=1.18)
+    arr = apply_bloom(arr, bloom_radius, bloom_intensity)
+    arr = apply_vignette(arr, vignette_strength)
+    arr = ensure_colorfulness(arr)
 
-    # --------------------------------------------------------
-    # Final Output
-    # --------------------------------------------------------
-    final_img = Image.fromarray((np.clip(arr, 0, 1) * 255).astype(np.uint8), mode="RGB")
+    final_img = Image.fromarray((arr * 255).astype(np.uint8), mode="RGB")
+
     buf = BytesIO()
     final_img.save(buf, format="PNG")
     buf.seek(0)
@@ -1124,18 +1105,16 @@ with left:
 
 
 # ------------------------------------------------------------
-# RIGHT — Data Table with Clickable News Links
+# RIGHT — Clickable News Table
 # ------------------------------------------------------------
 with right:
     st.subheader("📊 Data & Emotion Mapping")
 
     df2 = df.copy()
 
-    # If news source exists, convert to clickable link
     if "url" in df2.columns:
-        df2["link"] = df2.apply(
-            lambda r: f"[Open News]({r['url']})" if isinstance(r["url"], str) else "",
-            axis=1
+        df2["link"] = df2["url"].apply(
+            lambda u: f"[Open News]({u})" if isinstance(u, str) else ""
         )
     else:
         df2["link"] = ""
@@ -1144,25 +1123,10 @@ with right:
         lambda e: f"{e} ({COLOR_NAMES.get(e, 'Custom')})"
     )
 
-    show_cols = ["text", "emotion_display", "compound", "pos", "neu", "neg"]
+    show_cols = ["text", "emotion_display"]
+    if "timestamp" in df2.columns: show_cols.append("timestamp")
+    if "source" in df2.columns: show_cols.append("source")
+    if "link" in df2.columns: show_cols.append("link")
 
-    if "timestamp" in df2.columns:
-        show_cols.insert(1, "timestamp")
-    if "source" in df2.columns:
-        show_cols.insert(2, "source")
-    if "link" in df2.columns:
-        show_cols.append("link")
+    st.dataframe(df2[show_cols], use_container_width=True, height=690)
 
-    st.markdown(
-        """
-        <style>
-        .stMarkdown a {
-            color: #8ab4ff !important;
-            text-decoration: underline !important;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.dataframe(df2[show_cols], use_container_width=True, height=700)
