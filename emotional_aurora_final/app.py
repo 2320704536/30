@@ -926,29 +926,45 @@ bg_rgb = _hex_to_rgb(bg_custom)
 # ------------------------------------------------------------
 # ========== Sidebar Part 5 — Cinematic Color ==========
 # ------------------------------------------------------------
-st.sidebar.header("5) Cinematic Color")
+# ------------------------------------------------------------
+# ========== Sidebar Part 5b — Split Toning ==========
+# ------------------------------------------------------------
+st.sidebar.subheader("Split Toning")
 
-exp = st.sidebar.slider("Exposure", -0.2, 1.8,
-                        st.session_state.get("exp", DEFAULTS["exp"]), 0.01)
+sh_r = st.sidebar.slider(
+    "Shadow R", 0.0, 1.0,
+    st.session_state.get("sh_r", DEFAULTS["sh_r"])
+)
 
-contrast = st.sidebar.slider("Contrast", 0.7, 1.8,
-                             st.session_state.get("contrast", DEFAULTS["contrast"]))
+sh_g = st.sidebar.slider(
+    "Shadow G", 0.0, 1.0,
+    st.session_state.get("sh_g", DEFAULTS["sh_g"])
+)
 
-saturation = st.sidebar.slider("Saturation", 0.7, 1.9,
-                               st.session_state.get("saturation", DEFAULTS["saturation"]))
+sh_b = st.sidebar.slider(
+    "Shadow B", 0.0, 1.0,
+    st.session_state.get("sh_b", DEFAULTS["sh_b"])
+)
 
-gamma_val = st.sidebar.slider("Gamma", 0.7, 1.4,
-                              st.session_state.get("gamma_val", DEFAULTS["gamma_val"]))
+hi_r = st.sidebar.slider(
+    "Highlight R", 0.0, 1.0,
+    st.session_state.get("hi_r", DEFAULTS["hi_r"])
+)
 
-roll = st.sidebar.slider("Highlight Roll-off", 0.0, 1.5,
-                         st.session_state.get("roll", DEFAULTS["roll"]))
+hi_g = st.sidebar.slider(
+    "Highlight G", 0.0, 1.0,
+    st.session_state.get("hi_g", DEFAULTS["hi_g"])
+)
 
-st.sidebar.subheader("White Balance")
-temp = st.sidebar.slider("Temperature", -1.0, 1.0,
-                         st.session_state.get("temp", DEFAULTS["temp"]))
+hi_b = st.sidebar.slider(
+    "Highlight B", 0.0, 1.0,
+    st.session_state.get("hi_b", DEFAULTS["hi_b"])
+)
 
-tint = st.sidebar.slider("Tint", -1.0, 1.0,
-                         st.session_state.get("tint", DEFAULTS["tint"]))
+tone_balance = st.sidebar.slider(
+    "Balance", -1.0, 1.0,
+    st.session_state.get("tone_balance", DEFAULTS["tone_balance"])
+)
 
 
 # ------------------------------------------------------------
