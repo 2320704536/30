@@ -1029,21 +1029,6 @@ wobble_control = st.sidebar.slider(
 layer_count = st.sidebar.slider(
     "Render Layers", 1, 25, 10
 )
-
-
-with st.expander("🎨 Split Toning Controls"):
-    st.subheader("Shadow Color")
-    sh_r = st.slider("Shadow R", 0, 255, 40)
-    sh_g = st.slider("Shadow G", 0, 255, 30)
-    sh_b = st.slider("Shadow B", 0, 255, 20)
-
-    st.subheader("Highlight Color")
-    hi_r = st.slider("Highlight R", 0, 255, 230)
-    hi_g = st.slider("Highlight G", 0, 255, 235)
-    hi_b = st.slider("Highlight B", 0, 255, 240)
-
-    tone_balance = st.slider("Balance", -1.0, 1.0, 0.0)
-
 # ------------------------------------------------------------
 # Page Layout — Left (image) / Right (data)
 # ------------------------------------------------------------
